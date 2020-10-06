@@ -1,33 +1,50 @@
-FROM phusion/baseimage:0.9.17
+FROM phusion/baseimage:18.04-1.0.0-amd64
 
-RUN apt-get update &&\
- apt-get install -y haskell-platform
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get install -y \
+    gitit \
+    graphviz \
+    lmodern \
+    mime-support \
+    pandoc-data \
+    texlive \
+    texlive-latex-extra
 
-RUN apt-get update &&\
- apt-get install -y git mime-support pandoc-data graphviz\
- texlive texlive-latex-extra lmodern
+ARG A_GITIT_THEME=flat
+ARG A_GITIT_THEME_URL=https://github.com/matthewddunlap/gitit-bootstrap-theme
+ARG A_GITIT_THEME_BRANCH=master
+ARG A_GITIT_THEME_DIR=/opt/gitit-theme-${A_GITIT_THEME}
 
-RUN cabal update &&\
-  cabal install gitit --global
+RUN git clone --depth 1 -b ${A_GITIT_THEME_BRANCH} ${A_GITIT_THEME_URL} ${A_GITIT_THEME_DIR} && \
+    bash ${A_GITIT_THEME_DIR}/build.sh
 
-RUN useradd -ms /bin/bash gitit
+ADD setup-user_group.sh /etc/my_init.d/01_setup-user_group
+ADD setup-directory.sh /etc/my_init.d/03_setup-directory
+ADD setup-uid_gid.sh /etc/my_init.d/05_setup-uid_gid
+ADD setup-ssh.sh /etc/my_init.d/07-setup_ssh.sh
+ADD setup-gitit.sh /etc/my_init.d/09_setup-gitit.sh
+ADD setup-gitit_theme.sh /etc/my_init.d/11_setup-gitit_theme.sh
 
-RUN mkdir /etc/service/gitit
-ADD gitit.sh /etc/service/gitit/run
+ADD run-gitit.sh /etc/service/gitit/run
 
-# Use baseimage-docker's init system + fix uid and gid of user running gitit
-ADD my_init_fug.sh /sbin/my_init_fug
-CMD ["/sbin/my_init_fug"]
-ADD fix-uid-gid.sh /usr/bin/fix-uid-gid
-
-EXPOSE 5001 22
-
-ENV GIT_COMMITTER_NAME gitit
-ENV GIT_COMMITTER_EMAIL gitit@example.com
-ENV GITIT_CONF gitit.conf
-ENV GITIT_REPOSITORY /gitit
-
-RUN usermod -p '*' gitit
 RUN rm -f /etc/service/sshd/down
-RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
-ADD ssh_setup.sh /etc/my_init.d/00_ssh_setup.sh
+
+ENV GIT_COMMITTER_NAME gititt
+ENV GIT_COMMITTER_EMAIL gitit@example.com
+ENV GITIT_REPOSITORY /gitit
+ENV GITIT_CONF gitit.conf
+ENV GITIT_USER gitit
+ENV GITIT_GROUP gitit
+ENV GITIT_PORT 5001
+ENV SSH_PORT 22
+ENV SSH_AUTHORIZED_KEYS ${GITIT_REPOSITORY}/authorized_keys
+ENV GITIT_THEME ${A_GITIT_THEME}
+ENV GITIT_THEME_URL ${A_GITIT_THEME_URL}
+ENV GITIT_THEME_BRANCH ${A_GITIT_THEME_BRANCH}
+ENV GITIT_THEME_DIR ${A_GITIT_THEME_DIR}
+ENV GITIT_THEME_ACTIVE default
+
+CMD ["/sbin/my_init"]
+
+EXPOSE ${GITIT_PORT} ${SSH_PORT}
