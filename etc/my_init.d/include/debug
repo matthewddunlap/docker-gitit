@@ -1,0 +1,30 @@
+# echo "Full path to script"
+wdir="$PWD"; [ "$PWD" = "/" ] && wdir=""
+case "$0" in
+  /*) scriptpath="${0}";;
+  *) scriptpath="$wdir/${0#./}";;
+esac
+# echo $scriptpath
+
+# echo "Full path to directory containing script"
+scriptdir=${scriptpath%/*}
+# echo $scriptdir
+
+# echo "Name of directory containing script"
+dir=${scriptdir##*/}
+# echo "$dir"
+
+# echo "Name of script"
+name=${scriptpath##*/}
+# echo "$name"
+
+
+if [[ ${name} = run ]]; then
+  LOG_NAME=$dir
+else
+  LOG_NAME=$name
+fi
+
+SCRIPT_LOG=/opt/${LOG_NAME}.log
+exec &> >(tee ${SCRIPT_LOG})
+set -x

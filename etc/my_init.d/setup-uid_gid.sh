@@ -1,25 +1,31 @@
 #!/bin/bash
 
-DIRECTORY=$GITIT_REPOSITORY
+if [[ $MY_DEBUG = 1 ]]; then
+  source /etc/my_init.d/include/debug
+else
+  source /etc/my_init.d/include/no_debug
+fi
+
+BASE_DIR=$GITIT_DIRECTORY
 USER=${GITIT_USER}
 GROUP=${GITIT_GROUP}
 
 OLD_UID=$(getent passwd ${USER} |  awk -F: '{ print $3 }')
 OLD_GID=$(getent group ${GROUP} |  awk -F: '{ print $3 }')
-NEW_UID=$(stat -c %u $DIRECTORY)
-NEW_GID=$(stat -c %g $DIRECTORY)
+NEW_UID=$(stat -c %u $BASE_DIR)
+NEW_GID=$(stat -c %g $BASE_DIR)
 
 if [[ ${USER} = "root" && ${NEW_UID} != 0 ]]; then
-    echo "${DIRECTORY} must be root owned when running as root."
+    echo "${BASE_DIR} must be root owned when running as root."
     exit 1;
 fi
 
 if [[ ${USER} != "root" && ${NEW_UID} = 0 ]]; then
-    echo "${DIRECTORY} must NOT be root owned when NOT running as root."
+    echo "${BASE_DIR} must NOT be root owned when NOT running as root."
     exit 1;
 fi
 
-if [ -z "$DIRECTORY" ]; then
+if [ -z "$BASE_DIR" ]; then
   echo "Directory not specified"
   exit 1;
 fi
@@ -34,8 +40,8 @@ if [ -z "$GROUP" ]; then
   exit 1;
 fi
 
-if [ ! -d "$DIRECTORY" ]; then
-  echo "$DIRECTORY does not exist"
+if [ ! -d "$BASE_DIR" ]; then
+  echo "$BASE_DIR does not exist"
   exit 1;
 fi
 
