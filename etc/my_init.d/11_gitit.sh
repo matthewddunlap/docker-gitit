@@ -13,6 +13,7 @@ GROUP=${GITIT_GROUP}
 BIN=gitit
 BINARG="-f ${GITIT_CONF}"
 BINENV="/etc/service/gitit/env"
+PORT=${GITIT_PORT}
 GIT_DIR=${GITIT_REPOSITORY}
 GIT_DISCOVERY_ACROSS_FILESYSTEM=1
 DIRLIST="static templates"
@@ -48,7 +49,19 @@ do
   fi
 done
 
+GREP_BIN="grep"
+GREP_OPT="-qxF --"
+SED_BIN="sed"
+SED_OPT="-i"
+SED_FUNC="c"
+
 FILE="${CONF}"
-LINE="port: ${GITIT_PORT}"
 cd ${BASE_DIR}
-grep -qxF -- "$LINE" "$FILE" || sed -i "/^port: [[:digit:]]*/a ${LINE}" $FILE
+
+LINE_NEW="port: ${PORT}"
+LINE_OLD="^port: [[:digit:]]*"
+${GREP_BIN} ${GREP_OPT} "${LINE_NEW}" "${FILE}" || ${SED_BIN} ${SED_OPT} "/${LINE_OLD}/${SED_FUNC} ${LINE_NEW}" ${FILE}
+
+LINE_NEW="repository-path: ${GIT_DIR}"
+LINE_OLD="^repository-path: [[:alnum:]/]"
+${GREP_BIN} ${GREP_OPT} "${LINE_NEW}" "${FILE}" || ${SED_BIN} ${SED_OPT} "/${LINE_OLD}/${SED_FUNC} ${LINE_NEW}" ${FILE}
