@@ -19,14 +19,6 @@ ARG A_GITIT_THEME_DIR=/opt/gitit-theme-${A_GITIT_THEME}
 RUN git clone --depth 1 -b ${A_GITIT_THEME_BRANCH} ${A_GITIT_THEME_URL} ${A_GITIT_THEME_DIR} && \
     bash ${A_GITIT_THEME_DIR}/build.sh
 
-#ADD setup-user_group.sh /etc/my_init.d/01_setup-user_group
-#ADD setup-directory.sh /etc/my_init.d/03_setup-directory
-#ADD setup-uid_gid.sh /etc/my_init.d/05_setup-uid_gid
-#ADD setup-ssh.sh /etc/my_init.d/07-setup_ssh.sh
-#ADD setup-gitit.sh /etc/my_init.d/09_setup-gitit.sh
-#ADD setup-gitit_theme.sh /etc/my_init.d/11_setup-gitit_theme.sh
-#ADD run-gitit.sh /etc/service/gitit/run
-
 COPY etc /etc/
 
 RUN rm -f /etc/service/sshd/down
