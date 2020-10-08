@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ $MY_DEBUG = 1 ]]; then
+  source /etc/my_init.d/include/debug
+else
+  source /etc/my_init.d/include/no_debug
+fi
+
 USER=${GITIT_USER}
 GROUP=${GITIT_GROUP}
 

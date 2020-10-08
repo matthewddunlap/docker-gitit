@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [[ $MY_DEBUG = 1 ]]; then
+  source /etc/my_init.d/include/debug
+else
+  source /etc/my_init.d/include/no_debug
+fi
+
+BASE_DIR=${GITIT_DIRECTORY}
+USER=${GITIT_USER}
+GROUP=${GITIT_GROUP}
+BIN=gitit
+BINARG="-f ${GITIT_CONF}"
+BINENV="/etc/service/gitit/env"
+GIT_DIR=${GITIT_REPOSITORY}
+GIT_DISCOVERY_ACROSS_FILESYSTEM=1
+
+cd ${BASE_DIR}
+
+if [ -d ${GIT_DIR}/cache ]; then
+  rm -rf ${GIT_DIR}/cache/*
+fi
+
+exec chpst -u ${USER}:${GROUP} -e ${BINENV} ${BIN} ${BINARG}
